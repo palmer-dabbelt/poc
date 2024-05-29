@@ -1,0 +1,5 @@
+check/
+obj/
+*.swp
+__pycache__/
+*.vcd

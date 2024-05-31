@@ -46,7 +46,7 @@ class Frontend(Component):
 				m.d.sync += pc.eq(pc + 4)
 				m.d.comb += [
 					self.valid.eq(1),
-					self.instruction.eq(ir >> (pc % 512)),
+					self.instruction.eq(ir >> ((pc % 64) * 8)),
 				]
 				with m.If((pc % 64) == 60):
 					m.next = "Request Fetch"

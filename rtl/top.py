@@ -30,8 +30,10 @@ class TestBenchMemory:
 
 		raise Exception("Unknown Address")
 
-tb_mem = TestBenchMemory(ELFFile(open(args.bootrom_elf, "rb")))
+	def readh(self, addr):
+		return self.readb(addr) + (self.readb(addr + 1) << 8)
 
+tb_mem = TestBenchMemory(ELFFile(open(args.bootrom_elf, "rb")))
 tb_mem.readb(0x20000000)
 
 dut = Core()
@@ -41,7 +43,12 @@ def bench():
 		valid = yield dut.req_valid
 		if valid:
 			addr = yield dut.req_addr
-			data = tb_mem.readb(addr)
+			data = 0
+			for x in range(62, -2, -2):
+				try:
+					data = tb_mem.readh(addr + x) | (data << 16)
+				except:
+					data = (data << 16)
 			yield Tick()
 			yield dut.res_data.eq(data)
 			yield dut.res_valid.eq(1)

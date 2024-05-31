@@ -1,10 +1,11 @@
 .SECONDARY:
 
 check: $(patsubst tests/%.s,check/%.vcd,$(wildcard tests/*.s))
+	echo $^
 
 # Cleanup
 clean:
-	rm -rf obj
+	rm -rf obj check
 
 # Top-level verilog
 obj/venv/stamp: \

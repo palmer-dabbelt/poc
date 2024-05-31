@@ -17,22 +17,10 @@ class CoreRunState(Enum, shape=int(2)):
 
 class Core(Component):
 	state: Out(CoreRunState)
-
-	# ... and also no idea why I can't just do a "mem_port:
-	# MemPortSource(64, 512)" here.  Maybe there's some issue with
-	# non-primitive types at the top level?  The docs say something about
-	# IOPort.
-	req_ready: In(1)
-	req_valid: Out(1)
-	req_addr:  Out(64)
-	res_ready: Out(1)
-	res_valid: In(1)
-	res_data:  In(512)
+	#memport: MemPortSource(64, 512)
 
 	def __init__(self):
-		# FIXME: Also not sure why I have to do this here, as opposed
-		# to as a static member as above.
-		#self.mem_port = MemPortSource(64, 512)
+		self.memport = MemPortSource(64, 512)
 		super().__init__()
 
 	def elaborate(self, platform):
@@ -41,12 +29,12 @@ class Core(Component):
 		frontend = Frontend()
 		m.submodules.frontend = frontend
 		m.d.sync += [
-			frontend.icache_refill.req.ready.eq(self.req_ready),
-			self.req_valid.eq(frontend.icache_refill.req.valid),
-			self.req_addr.eq(frontend.icache_refill.req.addr),
-			self.res_ready.eq(frontend.icache_refill.res.ready),
-			frontend.icache_refill.res.valid.eq(self.res_valid),
-			frontend.icache_refill.res.data.eq(self.res_data),
+			frontend.icache_refill.req.ready.eq(self.memport.req.ready),
+			self.memport.req.valid.eq(frontend.icache_refill.req.valid),
+			self.memport.req.addr.eq(frontend.icache_refill.req.addr),
+			self.memport.res.ready.eq(frontend.icache_refill.res.ready),
+			frontend.icache_refill.res.valid.eq(self.memport.res.valid),
+			frontend.icache_refill.res.data.eq(self.memport.res.data),
 		]
 
 		with m.If(frontend.valid):

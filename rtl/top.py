@@ -39,10 +39,10 @@ tb_mem.readb(0x20000000)
 dut = Core()
 def bench():
 	for _ in range(30):
-		yield dut.req_ready.eq(1)
-		valid = yield dut.req_valid
+		yield dut.memport.req.ready.eq(1)
+		valid = yield dut.memport.req.valid
 		if valid:
-			addr = yield dut.req_addr
+			addr = yield dut.memport.req.addr
 			data = 0
 			for x in range(62, -2, -2):
 				try:
@@ -50,11 +50,11 @@ def bench():
 				except:
 					data = (data << 16)
 			yield Tick()
-			yield dut.res_data.eq(data)
-			yield dut.res_valid.eq(1)
-			while (yield dut.res_ready != 1):
+			yield dut.memport.res.data.eq(data)
+			yield dut.memport.res.valid.eq(1)
+			while (yield dut.memport.res.ready != 1):
 				yield Tick()
-			yield dut.res_valid.eq(0)
+			yield dut.memport.res.valid.eq(0)
 			yield Tick()
 		yield Tick()
 

@@ -1,3 +1,6 @@
 [submodule "tools/amaranth"]
 	path = tools/amaranth
 	url = git@github.com:amaranth-lang/amaranth.git
+[submodule "tools/pyelftools"]
+	path = tools/pyelftools
+	url = git@github.com:eliben/pyelftools.git

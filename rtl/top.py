@@ -5,7 +5,7 @@ from amaranth.lib import wiring
 from amaranth.lib.wiring import In, Out
 from amaranth.sim import *
 
-from core import Core
+from core import Core, CoreRunState
 
 from elftools.elf.elffile import ELFFile
 
@@ -58,7 +58,7 @@ def bench():
 			yield Tick()
 		yield Tick()
 
-	assert (yield dut.state == 2)
+	assert (yield dut.state == CoreRunState.SUCCESS)
 
 sim = Simulator(dut)
 sim.add_clock(1e-6) # 1 MHz

@@ -9,15 +9,14 @@ from frontend import Frontend
 
 from memport import MemPortSource
 
-class CoreRunState(Enum, shape=2):
+class CoreRunState(Enum, shape=int(2)):
 	RESET = 0
 	RUNNING = 1
 	SUCCESS = 2
 	FAIL = 3
 
 class Core(Component):
-	# FIXME: No idea why I can't just do a "Out(CoreRunState)" here...
-	state: Out(2)
+	state: Out(CoreRunState)
 
 	# ... and also no idea why I can't just do a "mem_port:
 	# MemPortSource(64, 512)" here.  Maybe there's some issue with

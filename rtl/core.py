@@ -37,12 +37,16 @@ class Core(Component):
 			frontend.icache_refill.res.data.eq(self.memport.res.data),
 		]
 
-		with m.If(frontend.valid):
+		with m.If(frontend.valid & frontend.ready):
 			with m.If(frontend.instruction == 0x00000073):
 				m.d.sync += self.state.eq(CoreRunState.SUCCESS)
 			with m.Elif(frontend.instruction == 0x0000007E):
 				m.d.sync += self.state.eq(CoreRunState.FAIL)
 			with m.Else():
 				m.d.sync += self.state.eq(CoreRunState.RUNNING)
+		with m.Elif(self.state == CoreRunState.RESET):
+			m.d.sync += self.state.eq(CoreRunState.RUNNING)
+
+		m.d.comb += frontend.ready.eq(self.state == CoreRunState.RUNNING)
 
 		return m

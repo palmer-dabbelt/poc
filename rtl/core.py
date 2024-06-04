@@ -17,7 +17,7 @@ class CoreRunState(Enum, shape=int(2)):
 
 class Core(Component):
 	state: Out(CoreRunState)
-	#memport: MemPortSource(64, 512)
+	valid_bytes: In(7)
 
 	def __init__(self):
 		self.memport = MemPortSource(64, 512)
@@ -25,6 +25,9 @@ class Core(Component):
 
 	def elaborate(self, platform):
 		m = Module()
+
+		actually_valid = Signal()
+		m.d.sync += actually_valid.eq(self.memport.res.valid.bool() & (self.valid_bytes > 0).bool())
 
 		frontend = Frontend()
 		m.submodules.frontend = frontend

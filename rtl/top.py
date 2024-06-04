@@ -44,14 +44,16 @@ def bench():
 		if valid:
 			addr = yield dut.memport.req.addr
 			data = 0
+			count = 0
 			for x in range(62, -2, -2):
 				try:
 					data = tb_mem.readh(addr + x) | (data << 16)
+					count = count + 1
 				except:
 					data = (data << 16)
 			yield Tick()
 			yield dut.memport.res.data.eq(data)
-			yield dut.memport.res.valid.eq(1)
+			yield dut.memport.res.valid.eq(count > 0)
 			while (yield dut.memport.res.ready != 1):
 				yield Tick()
 			yield dut.memport.res.valid.eq(0)

@@ -40,7 +40,9 @@ class Core(Component):
 		with m.If(frontend.valid):
 			with m.If(frontend.instruction == 0x00000073):
 				m.d.sync += self.state.eq(CoreRunState.SUCCESS)
-			with m.If(frontend.instruction == 0x0000007E):
+			with m.Elif(frontend.instruction == 0x0000007E):
 				m.d.sync += self.state.eq(CoreRunState.FAIL)
+			with m.Else():
+				m.d.sync += self.state.eq(CoreRunState.RUNNING)
 
 		return m

@@ -2,3 +2,17 @@
 _start:
 	nop
 	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall
+	ecall

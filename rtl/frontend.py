@@ -4,33 +4,24 @@ from amaranth import *
 from amaranth.lib import wiring
 from amaranth.lib.wiring import In, Out, Component
 
-from memport import MemPortSource
+from memport import MemPortSignature
 
 # The fetch unit provides cache lines of instruction-flavored data to the
 # pipeline, by asking for cache lines from the memory system.
 class Fetch(Component):
-	# Request/response for cache lines.
-	req_addr: In(64)
-	req_valid: In(1)
-	req_ready: Out(1)
-
-	res_data: Out(512)
-	res_addr: Out(64)
-	res_valid: Out(1)
-	res_ready: In(1)
-
-	# Why can't I just stick this in here along with the rest of the ports?
-	# I'm thinking I've done something wrong with my
-	# Signature/Shape/Elaboratable stuff, but I don't quite understand what
-	# that is.  So for now I'm just leaving these all commented out and
-	# sticking them in __init__(), which works but is ugly and makes me
-	# worried I'm missing something -- maybe I just don't understand enough
-	# about Python here?
-	# FIXME: icache_refill: MemPortSource(64, 512)
-
 	def __init__(self):
-		self.icache_refill = MemPortSource(64, 512)
-		super().__init__()
+		super().__init__({
+			"req_addr": In(64),
+			"req_valid": In(1),
+			"req_ready": Out(1),
+
+			"res_data": Out(512),
+			"res_addr": Out(64),
+			"res_valid": Out(1),
+			"res_ready": In(1),
+
+			"icache_refill": Out(MemPortSignature(64, 512))
+		})
 
 	def elaborate(self, platform):
 		m = Module()
@@ -134,14 +125,14 @@ class Decode(Component):
 		return m
 
 class Frontend(Component):
-	instruction: Out(32)
-	address: Out(64)
-	valid: Out(1)
-	ready: In(1)
-
 	def __init__(self):
-		self.icache_refill = MemPortSource(64, 512)
-		super().__init__()
+		super().__init__({
+			"instruction": Out(32),
+			"address": Out(64),
+			"valid": Out(1),
+			"ready": In(1),
+			"icache_refill": Out(MemPortSignature(64, 512))
+		})
 
 	def elaborate(self, platform):
 		m = Module()

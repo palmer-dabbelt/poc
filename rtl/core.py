@@ -7,7 +7,9 @@ from amaranth.lib.enum import Enum
 
 from frontend import Frontend
 
-from memport import MemPortSource
+from memport import MemPortSignature
+
+from pms import Buffer
 
 class CoreRunState(Enum, shape=int(2)):
 	RESET = 0
@@ -16,30 +18,27 @@ class CoreRunState(Enum, shape=int(2)):
 	FAIL = 3
 
 class Core(Component):
-	state: Out(CoreRunState)
-	valid_bytes: In(7)
-
 	def __init__(self):
-		self.memport = MemPortSource(64, 512)
-		super().__init__()
+		super().__init__({
+			"state": Out(CoreRunState),
+			"valid_bytes": In(7),
+			"memport": Out(MemPortSignature(64, 512)),
+		})
 
 	def elaborate(self, platform):
 		m = Module()
 
 		actually_valid = Signal()
-		m.d.sync += actually_valid.eq(self.memport.res.valid.bool() & (self.valid_bytes > 0).bool())
+		m.d.sync += actually_valid.eq(self.memport.res.valid & (self.valid_bytes > 0))
+		
+		m.submodules.frontend = frontend = Frontend()
 
-		frontend = Frontend()
-		m.submodules.frontend = frontend
-		m.d.sync += [
-			frontend.icache_refill.req.ready.eq(self.memport.req.ready),
-			self.memport.req.valid.eq(frontend.icache_refill.req.valid),
-			self.memport.req.addr.eq(frontend.icache_refill.req.addr),
-			self.memport.res.ready.eq(frontend.icache_refill.res.ready),
-			frontend.icache_refill.res.valid.eq(self.memport.res.valid),
-			frontend.icache_refill.res.data.eq(self.memport.res.data),
-		]
+		# For now our whole memory system is just a buffer.  That's
+		# probably good enough for a little while.
+		membuf = Buffer(m, self.memport, frontend.icache_refill)
 
+		# This roles the whole backend into basically just decode logic: 
+		m.d.comb += frontend.ready.eq(self.state == CoreRunState.RUNNING)
 		with m.If(frontend.valid & frontend.ready):
 			with m.If(frontend.instruction == 0x00000073):
 				m.d.sync += self.state.eq(CoreRunState.SUCCESS)
@@ -50,6 +49,5 @@ class Core(Component):
 		with m.Elif(self.state == CoreRunState.RESET):
 			m.d.sync += self.state.eq(CoreRunState.RUNNING)
 
-		m.d.comb += frontend.ready.eq(self.state == CoreRunState.RUNNING)
 
 		return m

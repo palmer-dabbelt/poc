@@ -1,7 +1,7 @@
 .SECONDARY:
 
 check: $(patsubst tests/%.s,check/%.vcd,$(wildcard tests/*.s))
-	echo $^
+	@echo $^
 
 # Cleanup
 clean:
